@@ -155,13 +155,13 @@ app.get("/rooms", (req, res) => {
 io.on("connection", (socket) => {
 	console.log(`Socket : ${socket.id} has connected to the server`);
 	socket.on("name", (data) => {
-		if (namesTaken.includes(data)) {
+		if (namesTaken.includes(data) && data != "Anonymous") {
 			socket.emit("nameTaken");
 			return;
 		}
 
 		user = new User(data, socket);
-		namesTaken.push(data);
+		data != "Anonymous" && namesTaken.push(data);
 		console.log(`User "${user.name}" created`);
 	});
 });
