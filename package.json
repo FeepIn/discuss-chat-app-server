@@ -1,18 +1,18 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "description": "Discuss backend",
-  "main": "index.js",
-  "scripts": {
-	"start": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "FeepIn",
-  "license": "UNLICENSED",
-  "dependencies": {
-    "bcrypt": "^4.0.1",
-    "express": "^4.17.1",
-    "socket.io": "^2.3.0",
-    "sqlite3": "^4.2.0"
-  }
+	"name": "server",
+	"version": "12.16.1",
+	"description": "Discuss backend",
+	"main": "index.js",
+	"scripts": {
+		"start": "nodemon index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "FeepIn",
+	"license": "UNLICENSED",
+	"dependencies": {
+		"bcrypt": "^4.0.1",
+		"express": "^4.17.1",
+		"socket.io": "^2.3.0",
+		"sqlite3": "^4.2.0"
+	}
 }
