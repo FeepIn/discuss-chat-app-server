@@ -171,9 +171,6 @@ function getCounts() {
 	var themes = Object.keys(theme);
 
 	for (var i = 0; i < themes.length; i++) {
-		if (theme[themes[i]].length == 0) {
-			continue;
-		}
 		datas[themes[i]] = {};
 		datas[themes[i]].userCount = theme[themes[i]].reduce((acc, cur) => {
 			return acc + cur.users.length;
