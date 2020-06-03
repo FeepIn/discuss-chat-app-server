@@ -178,9 +178,7 @@ function getCounts() {
 		datas[themes[i]].rooms = theme[themes[i]].map((val) => {
 			return { roomName: val.roomName, userCount: val.users.length };
 		});
-		console.log(theme[themes[i]]);
 	}
-	console.log(theme);
 
 	return datas;
 }
