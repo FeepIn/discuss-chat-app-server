@@ -71,11 +71,13 @@ function Room(host, roomName, roomTheme) {
 			parent.users.splice(parent.users.indexOf(user), 1);
 			io.in(parent.roomName).emit("userKicked", user.name);
 			user.socket.leave(parent.roomName);
+			user.roomLeft();
 			console.log(`User "${user.name}" has been kicked from room "${parent.roomName}"`);
 		} else {
 			parent.users.splice(parent.users.indexOf(user), 1);
 			io.in(parent.roomName).emit("userLeft", user.name);
 			user.socket.leave(parent.roomName);
+			user.roomLeft();
 			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
 
 			if (this.host == user && this.users.length > 0) {
@@ -127,7 +129,9 @@ function User(name, socket) {
 				if (this.room) {
 					this.room.deleteUser(this, false);
 				}
-				this.name != "Anonymous" && namesTaken.splice(namesTaken.indexOf(this.name), 1);
+				if (this.name != "Anonymous") {
+					namesTaken.splice(namesTaken.indexOf(this.name), 1);
+				}
 			});
 	};
 
@@ -156,13 +160,15 @@ app.get("/rooms", (req, res) => {
 io.on("connection", (socket) => {
 	console.log(`Socket : ${socket.id} has connected to the server`);
 	socket.on("name", (data) => {
-		if (namesTaken.includes(data) && data != "Anonymous") {
+		if (namesTaken.includes(data)) {
 			socket.emit("nameTaken");
 			return;
 		}
 
 		user = new User(data, socket);
-		data != "Anonymous" && namesTaken.push(data);
+		if (data != "Anonymous") {
+			namesTaken.push(data);
+		}
 		console.log(`User "${user.name}" created`);
 	});
 });
