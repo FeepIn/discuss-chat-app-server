@@ -78,8 +78,9 @@ function Room(host, roomName, roomTheme) {
 			user.socket.leave(parent.roomName);
 			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
 
-			if ((this.host = user)) {
-				this.users[Math.random * this.users.length - 1] = this.host;
+			if (this.host == user && this.users.length > 0) {
+				this.host = this.users[Math.random * this.users.length - 1];
+				io.in(this.roomName).emit("newHost", this.host.name);
 			}
 		}
 
