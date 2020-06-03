@@ -4,7 +4,7 @@ const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const PORT = process.env.PORT || 8080;
 var namesTaken = [];
-
+var colors = [ "#530008", "#00655E", "#471141", "#1567AB", "#4C46C7" ];
 var theme = {
 	mangaAnime: [],
 	love: [],
@@ -96,6 +96,7 @@ function User(name, socket) {
 	this.name = name;
 	this.socket = socket;
 	this.room = null;
+	this.nameColor = colors[Math.random() * colors.length];
 
 	let configureListener = () => {
 		this.socket
@@ -123,7 +124,9 @@ function User(name, socket) {
 			})
 			.on("message", (message) => {
 				this.room.resetTimer();
-				this.socket.to(this.room.roomName).emit("message", { message: message, userName: this.name });
+				this.socket
+					.to(this.room.roomName)
+					.emit("message", { message: message, userName: this.name, color: this.nameColor });
 			})
 			.on("disconnect", () => {
 				if (this.room) {
@@ -154,7 +157,6 @@ server.listen(PORT, () => {
 
 app.get("/rooms", (req, res) => {
 	res.json(getCounts());
-	console.log("/rooms called");
 });
 
 io.on("connection", (socket) => {
