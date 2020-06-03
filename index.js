@@ -135,6 +135,20 @@ function User(name, socket) {
 				if (this.name != "Anonymous") {
 					namesTaken.splice(namesTaken.indexOf(this.name), 1);
 				}
+			})
+			.on("changeName", (name) => {
+				if (namesTaken.includes(name)) {
+					socket.emit("nameTaken");
+					return;
+				}
+
+				namesTaken.splice(namesTaken.indexOf(this.name), 1);
+
+				this.name = name;
+
+				if (data != "Anonymous") {
+					namesTaken.push(data);
+				}
 			});
 	};
 
