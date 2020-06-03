@@ -98,7 +98,7 @@ function User(name, socket) {
 	let configureListener = () => {
 		this.socket
 			.on("createRoom", (data) => {
-				data = JSON.parse(data);
+				data = typeof data == "string" ? JSON.parse(data) : data;
 
 				if (theme[data["roomTheme"]].some((element) => element.roomName == data["roomName"])) {
 					this.socket.emit("roomNameTaken");
@@ -107,7 +107,7 @@ function User(name, socket) {
 				}
 			})
 			.on("joinRoom", (data) => {
-				data = JSON.parse(data);
+				data = typeof data == "string" ? JSON.parse(data) : data;
 
 				theme[data["roomTheme"]].find((element) => element.roomName == data["roomName"]).addUser(this);
 			})
