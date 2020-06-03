@@ -15,7 +15,7 @@ var theme = {
 };
 
 function Room(host, roomName, roomTheme) {
-	this.afkTime = 5;
+	this.afkTime = 1800;
 	var parent = this;
 	this.roomTheme = roomTheme;
 	this.addUser = addUser;
@@ -126,7 +126,7 @@ function User(name, socket) {
 				if (this.room) {
 					this.room.deleteUser(this, false);
 				}
-				namesTaken.splice(namesTaken.indexOf(this.name), 1);
+				this.name != "Anonymous" && namesTaken.splice(namesTaken.indexOf(this.name), 1);
 			});
 	};
 
@@ -178,7 +178,9 @@ function getCounts() {
 		datas[themes[i]].rooms = theme[themes[i]].map((val) => {
 			return { roomName: val.roomName, userCount: val.users.length };
 		});
+		console.log(theme[themes[i]]);
 	}
+	console.log(theme);
 
 	return datas;
 }
