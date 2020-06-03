@@ -38,7 +38,7 @@ function Room(host, roomName, roomTheme) {
 		}
 		parent.users.push(user);
 		user.socket.join(parent.roomName);
-		if (!user.room) {
+		if (user.room == null) {
 			user.roomJoined(parent);
 			io.in(parent.roomName).emit("newUser", user.name);
 		}
