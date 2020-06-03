@@ -96,7 +96,7 @@ function User(name, socket) {
 	this.name = name;
 	this.socket = socket;
 	this.room = null;
-	this.nameColor = colors[Math.random() * colors.length];
+	this.nameColor = colors[Math.round(Math.random() * colors.length)];
 
 	let configureListener = () => {
 		this.socket
