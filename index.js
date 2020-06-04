@@ -96,7 +96,7 @@ function User(name, socket) {
 	this.name = name;
 	this.socket = socket;
 	this.room = null;
-	this.nameColor = colors[Math.round(Math.random() * colors.length)];
+	this.nameColor = colors[Math.round(Math.random() * (colors.length - 1))];
 
 	let configureListener = () => {
 		this.socket
@@ -123,6 +123,9 @@ function User(name, socket) {
 				this.room.deleteUser(this, false);
 			})
 			.on("message", (message) => {
+				message.trim();
+				if (message == "") return;
+
 				this.room.resetTimer();
 				io
 					.in(this.room.roomName)
