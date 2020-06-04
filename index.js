@@ -124,8 +124,8 @@ function User(name, socket) {
 			})
 			.on("message", (message) => {
 				this.room.resetTimer();
-				this.socket
-					.to(this.room.roomName)
+				io
+					.in(this.room.roomName)
 					.emit("message", { message: message, userName: this.name, color: this.nameColor });
 			})
 			.on("disconnect", () => {
