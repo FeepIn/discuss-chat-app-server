@@ -93,6 +93,7 @@ function Room(host, roomName, roomTheme) {
 }
 
 function User(name, socket) {
+	socket.emit("connected");
 	this.name = name;
 	this.socket = socket;
 	this.room = null;
