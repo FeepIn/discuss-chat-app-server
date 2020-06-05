@@ -82,7 +82,9 @@ function Room(host, roomName, roomTheme) {
 			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
 
 			if (parent.host == user && parent.users.length > 0) {
+				console.log(parent.users);
 				parent.host = parent.users[Math.round(Math.random * (parent.users.length - 1))];
+
 				io.in(parent.roomName).emit("newHost", { name: parent.host.name, color: parent.host.nameColor });
 			}
 		}
