@@ -3,7 +3,7 @@ const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const PORT = process.env.PORT || 8080;
-var namesTaken = [];
+var namesTaken = [ "System" ];
 var colors = [ "#530008", "#00655E", "#471141", "#1567AB", "#4C46C7" ];
 var theme = {
 	mangaAnime: [],
@@ -40,7 +40,7 @@ function Room(host, roomName, roomTheme) {
 		user.socket.join(parent.roomName);
 		if (user.room == null) {
 			user.roomJoined(parent);
-			io.in(parent.roomName).emit("newUser", user.name);
+			io.in(parent.roomName).emit("newUser", { name: user.name, color: user.nameColor });
 		}
 		console.log(`User "${user.name}" has joined room "${parent.roomName}"`);
 	}
