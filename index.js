@@ -81,14 +81,14 @@ function Room(host, roomName, roomTheme) {
 			user.roomLeft();
 			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
 
-			if (this.host == user && this.users.length > 0) {
-				this.host = this.users[Math.round(Math.random * this.users.length - 1)];
-				io.in(this.roomName).emit("newHost", { name: this.host.name, color: this.host.nameColor });
+			if (parent.host == user && parent.users.length > 0) {
+				parent.host = parent.users[Math.round(Math.random * (parent.users.length - 1))];
+				io.in(parent.roomName).emit("newHost", { name: parent.host.name, color: parent.host.nameColor });
 			}
 		}
 
-		if (this.users.length <= 0) {
-			this.destroyRoom();
+		if (parent.users.length <= 0) {
+			parent.destroyRoom();
 		}
 	}
 }
