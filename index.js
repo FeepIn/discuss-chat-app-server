@@ -69,20 +69,21 @@ function Room(host, roomName, roomTheme) {
 		}
 		if (kicked) {
 			parent.users.splice(parent.users.indexOf(user), 1);
-			io.in(parent.roomName).emit("userKicked", user.name);
+			io.in(parent.roomName).emit("userKicked", { name: user.name, color: user.nameColor });
 			user.socket.leave(parent.roomName);
+			user.emit("kicked", {});
 			user.roomLeft();
 			console.log(`User "${user.name}" has been kicked from room "${parent.roomName}"`);
 		} else {
 			parent.users.splice(parent.users.indexOf(user), 1);
-			io.in(parent.roomName).emit("userLeft", user.name);
+			io.in(parent.roomName).emit("userLeft", { name: user.name, color: user.nameColor });
 			user.socket.leave(parent.roomName);
 			user.roomLeft();
 			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
 
 			if (this.host == user && this.users.length > 0) {
 				this.host = this.users[Math.random * this.users.length - 1];
-				io.in(this.roomName).emit("newHost", this.host.name);
+				io.in(this.roomName).emit("newHost", { name: this.host.name, color: this.host.nameColor });
 			}
 		}
 
