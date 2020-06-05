@@ -146,8 +146,7 @@ function User(name, socket) {
 					socket.emit("nameTaken");
 					return;
 				}
-
-				namesTaken.splice(namesTaken.indexOf(this.name), 1);
+				if (data != "Anonymous") namesTaken.splice(namesTaken.indexOf(this.name), 1);
 
 				this.name = name;
 
