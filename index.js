@@ -69,20 +69,19 @@ function Room(host, roomName, roomTheme) {
 		}
 		if (kicked) {
 			parent.users.splice(parent.users.indexOf(user), 1);
-			io.in(parent.roomName).emit("userKicked", { name: user.name, color: user.nameColor });
 			user.socket.leave(parent.roomName);
-			user.emit("kicked", {});
 			user.roomLeft();
+			io.in(parent.roomName).emit("userKicked", { name: user.name, color: user.nameColor });
+			user.emit("kicked", {});
 			console.log(`User "${user.name}" has been kicked from room "${parent.roomName}"`);
 		} else {
 			parent.users.splice(parent.users.indexOf(user), 1);
-			io.in(parent.roomName).emit("userLeft", { name: user.name, color: user.nameColor });
 			user.socket.leave(parent.roomName);
 			user.roomLeft();
+			io.in(parent.roomName).emit("userLeft", { name: user.name, color: user.nameColor });
 			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
 
 			if (parent.host == user && parent.users.length > 0) {
-				console.log(parent.users);
 				parent.host = parent.users[Math.round(Math.random() * (parent.users.length - 1))];
 
 				io.in(parent.roomName).emit("newHost", { name: parent.host.name, color: parent.host.nameColor });
@@ -182,6 +181,7 @@ app.get("/rooms", (req, res) => {
 io.on("connection", (socket) => {
 	console.log(`Socket : ${socket.id} has connected to the server`);
 	socket.on("name", (data) => {
+		data.trim();
 		if (namesTaken.includes(data)) {
 			socket.emit("nameTaken");
 			return;
