@@ -104,7 +104,12 @@ function User(name, socket) {
 	let configureListener = () => {
 		this.socket
 			.on("createRoom", (data) => {
-				data = typeof data == "string" ? JSON.parse(data) : data;
+				try {
+					data = typeof data == "string" ? JSON.parse(data) : data;
+				} catch (error) {
+					console.log(error);
+					return;
+				}
 
 				if (theme[data["roomTheme"]].some((element) => element.roomName == data["roomName"])) {
 					this.socket.emit("roomNameTaken");
@@ -113,17 +118,26 @@ function User(name, socket) {
 				}
 			})
 			.on("joinRoom", (data) => {
-				data = typeof data == "string" ? JSON.parse(data) : data;
+				try {
+					data = typeof data == "string" ? JSON.parse(data) : data;
+				} catch (error) {
+					console.log(error);
+					return;
+				}
 
-				theme[data["roomTheme"]].find((element) => element.roomName == data["roomName"]).addUser(this);
+				room = theme[data["roomTheme"]].find((element) => element.roomName == data["roomName"]);
+				if (room != undefined) addUser(this);
 			})
 			.on("kickUser", (userName) => {
-				if (this.room.host == this) {
-					this.room.deleteUser(this.room.users.find((element) => element.name == userName), true);
+				user = this.room.users.find((element) => element.name == userName);
+				if (this.room.host == this && user != undefined) {
+					this.room.deleteUser(user, true);
 				}
 			})
 			.on("userLeft", () => {
-				this.room.deleteUser(this, false);
+				if (this.room != null) {
+					this.room.deleteUser(this, false);
+				}
 			})
 			.on("message", (message) => {
 				message.trim();
