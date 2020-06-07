@@ -72,7 +72,7 @@ function Room(host, roomName, roomTheme) {
 			user.socket.leave(parent.roomName);
 			user.roomLeft();
 			io.in(parent.roomName).emit("userKicked", { name: user.name, color: user.nameColor });
-			user.emit("kicked", {});
+			user.socket.emit("kicked", {});
 			console.log(`User "${user.name}" has been kicked from room "${parent.roomName}"`);
 		} else {
 			parent.users.splice(parent.users.indexOf(user), 1);
