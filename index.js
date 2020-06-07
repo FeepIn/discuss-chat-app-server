@@ -126,7 +126,7 @@ function User(name, socket) {
 				}
 
 				room = theme[data["roomTheme"]].find((element) => element.roomName == data["roomName"]);
-				if (room != undefined) addUser(this);
+				if (room != undefined) room.addUser(this);
 			})
 			.on("kickUser", (userName) => {
 				user = this.room.users.find((element) => element.name == userName);
