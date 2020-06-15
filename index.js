@@ -180,7 +180,11 @@ function User(name, socket) {
 
 	this.roomJoined = (room) => {
 		this.room = room;
-		this.socket.emit("roomJoined", { roomName: room.name, hostName: this.room.host.name });
+		this.socket.emit("roomJoined", {
+			roomName: room.name,
+			hostName: this.room.host.name,
+			userCount: this.room.users.length
+		});
 	};
 
 	configureListener();
