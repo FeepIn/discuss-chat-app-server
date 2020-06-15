@@ -62,7 +62,7 @@ function Room(host, roomName, roomTheme) {
 	}
 
 	function resetTimer() {
-		this.afkTime = 1800;
+		this.afkTime = 30;
 	}
 
 	function deleteUser(user, kicked) {
