@@ -190,7 +190,7 @@ function User(name, socket) {
 	configureListener();
 }
 
-server.listen(PORT, "192.168.1.39", () => {
+server.listen(PORT, () => {
 	console.log(`Server is listening on port ${PORT}...`);
 });
 
