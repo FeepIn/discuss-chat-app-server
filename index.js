@@ -40,7 +40,9 @@ function Room(host, roomName, roomTheme) {
 		user.socket.join(parent.roomName);
 		if (user.room == null) {
 			user.roomJoined(parent);
-			io.in(parent.roomName).emit("newUser", { name: user.name, color: user.nameColor });
+			io
+				.in(parent.roomName)
+				.emit("newUser", { name: user.name, color: user.nameColor, userCount: parent.users.length });
 		}
 		console.log(`User "${user.name}" has joined room "${parent.roomName}"`);
 	}
