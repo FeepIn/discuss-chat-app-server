@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000 ;
+const HOST = process.env.HOST || 'localhost';
 var namesTaken = [ "System" ];
 var colors = [ "#530008", "#00655E", "#471141", "#1567AB", "#4C46C7" ];
 var theme = {
@@ -194,8 +195,8 @@ function User(name, socket) {
 	configureListener();
 }
 
-server.listen(PORT, () => {
-	console.log(`Server is listening on port ${PORT}...`);
+server.listen(PORT,HOST,  () => {
+	console.log(`Server is listening on ip ${HOST} and on port ${PORT}...`);
 });
 
 app.get("/rooms", (req, res) => {
