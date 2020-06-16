@@ -2,8 +2,8 @@ const express = require("express");
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
-const PORT = process.env.PORT || 5000 ;
-const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || "localhost";
 var namesTaken = [ "System" ];
 var colors = [ "#530008", "#00655E", "#471141", "#1567AB", "#4C46C7" ];
 var theme = {
@@ -111,6 +111,7 @@ function User(name, socket) {
 	let configureListener = () => {
 		this.socket
 			.on("createRoom", (data) => {
+				if (this.room != null) return;
 				try {
 					data = typeof data == "string" ? JSON.parse(data) : data;
 				} catch (error) {
@@ -125,6 +126,7 @@ function User(name, socket) {
 				}
 			})
 			.on("joinRoom", (data) => {
+				if (this.room != null) return;
 				try {
 					data = typeof data == "string" ? JSON.parse(data) : data;
 				} catch (error) {
@@ -147,6 +149,7 @@ function User(name, socket) {
 				}
 			})
 			.on("message", (message) => {
+				if (this.room == null) return;
 				message.trim();
 				if (message == "") return;
 
@@ -195,7 +198,7 @@ function User(name, socket) {
 	configureListener();
 }
 
-server.listen(PORT,HOST,  () => {
+server.listen(PORT, HOST, () => {
 	console.log(`Server is listening on ip ${HOST} and on port ${PORT}...`);
 });
 
