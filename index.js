@@ -2,8 +2,11 @@ const express = require("express");
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
+
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || "localhost";
+
+//Vars
 var namesTaken = [ "System" ];
 var colors = [ "#530008", "#00655E", "#471141", "#1567AB", "#4C46C7" ];
 var theme = {
@@ -198,14 +201,22 @@ function User(name, socket) {
 	configureListener();
 }
 
+//Server stuff
+
 server.listen(PORT, HOST, () => {
 	console.log(`Server is listening on ip ${HOST} and on port ${PORT}...`);
 });
 
+//Static file
+
+app.use(express.static("./public"));
+
+//Routes
 app.get("/rooms", (req, res) => {
 	res.json(getCounts());
 });
 
+//Socket event
 io.on("connection", (socket) => {
 	console.log(`Socket : ${socket.id} has connected to the server`);
 	socket.on("name", (data) => {
