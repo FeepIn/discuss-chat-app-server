@@ -233,7 +233,7 @@ io.on("connection", (socket) => {
 		console.log(`User "${user.name}" created`);
 	});
 	socket.on("disconnect", () => {
-		console.log(`Socket : ${sockket.id} has disconnected from the server`);
+		console.log(`Socket : ${socket.id} has disconnected from the server`);
 	});
 });
 
