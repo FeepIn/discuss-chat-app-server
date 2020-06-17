@@ -232,6 +232,9 @@ io.on("connection", (socket) => {
 		}
 		console.log(`User "${user.name}" created`);
 	});
+	socket.on("disconnect", () => {
+		console.log(`Socket : ${sockket.id} has disconnected from the server`);
+	});
 });
 
 function getCounts() {
