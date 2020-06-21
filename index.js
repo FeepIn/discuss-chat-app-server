@@ -24,7 +24,7 @@ const namesTaken = [ "System" ]
 const users = []
 const rooms = {
 	mangaAnime: [],
-	love: [ new Room(new User("mad"), "laforet") ],
+	love: [],
 	videoGames: [],
 	space: [],
 	culture: [],
@@ -67,7 +67,7 @@ app.post("/name", (req, res) => {
 	}
 	users.push(new User(name))
 	token = jwt.sign(name, secretKey)
-	res.status(200).json({ token })
+	res.status(200).send(token)
 })
 
 app.post("/createRoom", (req, res) => {
@@ -152,7 +152,7 @@ function getSubjectDatas(subject) {
 
 function getSubjectsDatas() {
 	return Object.keys(rooms).map((el) => ({
-		subject: el,
+		subjectName: el,
 		userCount: rooms[el].reduce((acc, el) => acc + el.users.length, 0)
 	}))
 }

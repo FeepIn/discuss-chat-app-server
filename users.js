@@ -7,11 +7,13 @@ function User(name) {
 	this.socket = null
 
 	this.configureListeners = () => {
-		this.socket.on("message", (message) => {
-			message = typeof message != "string" ? message.toString() : message
-			message.trim()
-			if (this.room != null) this.socket.to(this.room.name).emit("message", message)
-		})
+		this.socket
+			.on("message", (message) => {
+				message = typeof message != "string" ? message.toString() : message
+				message.trim()
+				if (this.room != null) this.socket.to(this.room.name).emit("message", message)
+			})
+			.on("disconnect", () => {})
 	}
 }
 

@@ -6,7 +6,9 @@ function Room(host, name) {
 
 	this.addUser = (user) => {
 		if (this.users.includes(user)) return
-		this.users.push(users)
+		this.users.push(user)
+
+		user.socket.join(this.name)
 	}
 }
 
