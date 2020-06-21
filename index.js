@@ -74,7 +74,7 @@ app.post("/createRoom", (req, res) => {
 	let token = req.headers.token
 	let verified = auth(token, secretKey)
 
-	if (!verified) return res.status(400).send("Wrong token")
+	if (!verified) return res.status(400).statusMessage("Wrong token")
 
 	user = users.find((user) => user.name == verified)
 
@@ -124,10 +124,6 @@ io.on("connection", (socket) => {
 		user.configureListeners()
 		room.addUser(user)
 		io.in(room.name).emit("newUser", { userName: user.name, color: user.color })
-	})
-
-	socket.on("disconnect", () => {
-		console.log(`Socket : ${socket.id} has disconnected from the server`)
 	})
 })
 
