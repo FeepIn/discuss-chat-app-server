@@ -74,7 +74,7 @@ app.post("/createRoom", (req, res) => {
 	let token = req.headers.token
 	let verified = auth(token, secretKey)
 
-	if (!verified) return res.status(400).type("text").send("Wrong token")
+	if (!verified) return res.status(401).type("text").send("Wrong token")
 
 	user = users.find((user) => user.name == verified)
 
