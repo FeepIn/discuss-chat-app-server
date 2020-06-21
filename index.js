@@ -1,265 +1,121 @@
-const express = require("express");
-const app = express();
-const server = require("http").Server(app);
-const io = require("socket.io")(server);
+const express = require("express")
+const http = require("http")
+const fs = require("fs")
+const jwt = require("jsonwebtoken")
+const bodyParser = require("body-parser")
 
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || "localhost";
+const app = express()
+const server = http.createServer(app)
+const io = require("socket.io")(server)
 
-//Vars
-var namesTaken = [ "System" ];
-var colors = [ "#530008", "#00655E", "#471141", "#1567AB", "#4C46C7" ];
-var theme = {
+const PORT = process.env.PORT || 5000
+const IP = process.env.IP || "localhost"
+
+//Token secret key
+const secretKey = fs.readFileSync("./secret.key", "utf-8")
+
+//Middlewares
+const auth = require("./middlewares/auth.js")
+
+//App vars
+const Room = require("./Room.js")
+const User = require("./users.js")
+const namesTaken = [ "System" ]
+const users = []
+const rooms = {
 	mangaAnime: [],
 	love: [],
 	videoGames: [],
 	space: [],
 	culture: [],
 	music: []
-};
-
-function Room(host, roomName, roomTheme) {
-	this.afkTime = 1800;
-	var parent = this;
-	this.roomTheme = roomTheme;
-	this.addUser = addUser;
-	this.deleteUser = deleteUser;
-	this.tickTimer = tickTimer;
-	this.resetTimer = resetTimer;
-	this.destroyRoom = destroyRoom;
-	this.users = [];
-	this.host = host;
-	this.roomName = roomName;
-	this.userCount = 0;
-	this.unactivityTimeSeconds = 0;
-	theme[roomTheme].push(this);
-	addUser(host);
-	console.log(`Room "${roomName}" has been created by "${host.name}"`);
-
-	function addUser(user) {
-		if (parent.users.includes(user)) {
-			return;
-		}
-		parent.users.push(user);
-		user.socket.join(parent.roomName);
-		if (user.room == null) {
-			user.roomJoined(parent);
-			io
-				.in(parent.roomName)
-				.emit("newUser", { name: user.name, color: user.nameColor, userCount: parent.users.length });
-		}
-		console.log(`User "${user.name}" has joined room "${parent.roomName}"`);
-	}
-
-	function tickTimer() {
-		if (this.afkTime <= 0) {
-			this.destroyRoom();
-		}
-		this.afkTime -= 1;
-	}
-
-	function destroyRoom() {
-		for (let user of this.users) {
-			user.roomLeft();
-		}
-		theme[this.roomTheme].splice(theme[this.roomTheme].indexOf(this), 1);
-	}
-
-	function resetTimer() {
-		this.afkTime = 1800;
-	}
-
-	function deleteUser(user, kicked) {
-		if (!parent.users.includes(user)) {
-			return;
-		}
-		if (kicked) {
-			parent.users.splice(parent.users.indexOf(user), 1);
-			user.socket.leave(parent.roomName);
-			user.roomLeft();
-			io
-				.in(parent.roomName)
-				.emit("userKicked", { name: user.name, color: user.nameColor, userCount: parent.users.length });
-			user.socket.emit("kicked", {});
-			console.log(`User "${user.name}" has been kicked from room "${parent.roomName}"`);
-		} else {
-			parent.users.splice(parent.users.indexOf(user), 1);
-			user.socket.leave(parent.roomName);
-			user.roomLeft();
-			io
-				.in(parent.roomName)
-				.emit("userLeft", { name: user.name, color: user.nameColor, userCount: parent.users.length });
-			console.log(`User "${user.name}" has left room "${parent.roomName}"`);
-
-			if (parent.host == user && parent.users.length > 0) {
-				parent.host = parent.users[Math.round(Math.random() * (parent.users.length - 1))];
-
-				io.in(parent.roomName).emit("newHost", { name: parent.host.name, color: parent.host.nameColor });
-			}
-		}
-
-		if (parent.users.length <= 0) {
-			parent.destroyRoom();
-		}
-	}
 }
 
-function User(name, socket) {
-	socket.emit("connected");
-	this.name = name;
-	this.socket = socket;
-	this.room = null;
-	this.nameColor = colors[Math.round(Math.random() * (colors.length - 1))];
+//Middlewares
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.text())
 
-	let configureListener = () => {
-		this.socket
-			.on("createRoom", (data) => {
-				if (this.room != null) return;
-				try {
-					data = typeof data == "string" ? JSON.parse(data) : data;
-				} catch (error) {
-					console.log(error);
-					return;
-				}
+app.post("/name", (req, res) => {
+	let token = req.headers.token
+	let verified = token ? jwt.verify(token, secretKey) : false
 
-				if (theme[data["roomTheme"]].some((element) => element.roomName == data["roomName"])) {
-					this.socket.emit("roomNameTaken");
-				} else {
-					this.room = new Room(this, data["roomName"], data["roomTheme"]);
-				}
-			})
-			.on("joinRoom", (data) => {
-				if (this.room != null) return;
-				try {
-					data = typeof data == "string" ? JSON.parse(data) : data;
-				} catch (error) {
-					console.log(error);
-					return;
-				}
+	if (verified) {
+		res.status(300).json({ error: "Already connected" })
+		return
+	}
 
-				room = theme[data["roomTheme"]].find((element) => element.roomName == data["roomName"]);
-				if (room != undefined) room.addUser(this);
-			})
-			.on("kickUser", (userName) => {
-				user = this.room.users.find((element) => element.name == userName);
-				if (this.room.host == this && user != undefined) {
-					this.room.deleteUser(user, true);
-				}
-			})
-			.on("userLeft", () => {
-				if (this.room != null) {
-					this.room.deleteUser(this, false);
-				}
-			})
-			.on("message", (message) => {
-				if (this.room == null) return;
-				message.trim();
-				if (message == "") return;
+	let name = req.body
+	if (typeof name != "string") {
+		res.status(400).json({ error: "Name type not string" })
+		return
+	} else if (namesTaken.includes(name)) {
+		res.status(400).json({ error: "Name taken" })
+		return
+	}
+	users.push(new User(name))
+	token = jwt.sign(name, secretKey)
+	res.status(200).json({ token })
+})
 
-				this.room.resetTimer();
-				io
-					.in(this.room.roomName)
-					.emit("message", { message: message, userName: this.name, color: this.nameColor });
-			})
-			.on("disconnect", () => {
-				if (this.room) {
-					this.room.deleteUser(this, false);
-				}
-				if (this.name != "Anonymous") {
-					namesTaken.splice(namesTaken.indexOf(this.name), 1);
-				}
-			})
-			.on("changeName", (name) => {
-				if (namesTaken.includes(name)) {
-					socket.emit("nameTaken");
-					return;
-				}
-				if (data != "Anonymous") namesTaken.splice(namesTaken.indexOf(this.name), 1);
+app.post("/createRoom", (req, res) => {
+	let token = req.headers.token
+	let verified = auth(token, secretKey)
 
-				this.name = name;
+	if (!verified) return res.status(400).send("Wrong token")
 
-				if (data != "Anonymous") {
-					namesTaken.push(data);
-				}
-			});
-	};
+	let { roomTheme, roomName } = req.body
 
-	this.roomLeft = () => {
-		this.room = null;
-		this.socket.emit("roomLeft");
-	};
+	if (!roomTheme || !roomName) return res.status(400).send("Wrong content")
 
-	this.roomJoined = (room) => {
-		this.room = room;
-		this.socket.emit("roomJoined", {
-			roomName: room.name,
-			hostName: this.room.host.name,
-			userCount: this.room.users.length
-		});
-	};
+	rooms[roomTheme].push(new Room(host, roomName))
 
-	configureListener();
-}
+	res.status(201).end()
+})
 
-//Server stuff
-
-server.listen(PORT, HOST, () => {
-	console.log(`Server is listening on ip ${HOST} and on port ${PORT}...`);
-});
-
-//Static file
-
-app.use(express.static("./public"));
-
-//Routes
-app.get("/rooms", (req, res) => {
-	res.json(getCounts());
-});
-
-//Socket event
 io.on("connection", (socket) => {
-	console.log(`Socket : ${socket.id} has connected to the server`);
-	socket.on("name", (data) => {
-		data.trim();
-		if (namesTaken.includes(data)) {
-			socket.emit("nameTaken");
-			return;
+	console.log(`Socket : ${socket.id} has connected to the server`)
+
+	socket.on("joinRoom", (data) => {
+		try {
+			data = typeof data == "string" ? JSON.parse(data) : data
+		} catch (error) {
+			console.log(error)
+			return
+		}
+		const { roomTheme, roomName, token } = data
+		if (!roomTheme || !roomName) return
+
+		let verified = auth(token, secretKey)
+		if (!verified) {
+			socket.emit("wrongToken", {})
+			return
 		}
 
-		user = new User(data, socket);
-		if (data != "Anonymous") {
-			namesTaken.push(data);
-		}
-		console.log(`User "${user.name}" created`);
-	});
+		let room = findRoom(roomTheme, roomName)
+		if (!room) return
+
+		user = users.find((el) => el.name == verified)
+
+		if (!user) return
+
+		if (user.room) return
+
+		user.socket = socket
+		user.configureListeners()
+		room.addUser(user)
+		io.in(room.name).emit("newUser", { userName: user.name, color: user.color })
+	})
+
 	socket.on("disconnect", () => {
-		console.log(`Socket : ${socket.id} has disconnected from the server`);
-	});
-});
+		console.log(`Socket : ${socket.id} has disconnected from the server`)
+	})
+})
 
-function getCounts() {
-	var datas = {};
-	var themes = Object.keys(theme);
+server.listen(PORT, IP, () => {
+	console.log(`Server is running on port ${PORT}`)
+})
 
-	for (var i = 0; i < themes.length; i++) {
-		datas[themes[i]] = {};
-		datas[themes[i]].userCount = theme[themes[i]].reduce((acc, cur) => {
-			return acc + cur.users.length;
-		}, 0);
-		datas[themes[i]].rooms = theme[themes[i]].map((val) => {
-			return { roomName: val.roomName, userCount: val.users.length };
-		});
-	}
-
-	return datas;
+function findRoom(roomTheme, roomName) {
+	return rooms[roomTheme].find((el, i) => el.name == roomName)
 }
-
-function countDownRoomLifeTime() {
-	for (key of Object.keys(theme)) {
-		for (let i = 0; i < theme[key].length; i++) {
-			theme[key][i].tickTimer();
-		}
-	}
-}
-
-setInterval(countDownRoomLifeTime, 1000);
