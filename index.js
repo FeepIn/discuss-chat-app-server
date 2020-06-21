@@ -24,7 +24,7 @@ const namesTaken = [ "System" ]
 const users = []
 const rooms = {
 	mangaAnime: [],
-	love: [],
+	love: [ new Room(new User("mad"), "laforet") ],
 	videoGames: [],
 	space: [],
 	culture: [],
@@ -36,6 +36,17 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.text())
 
+app.get("/rooms/:subject", (req, res) => {
+	let subject = req.params.subject
+	if (!subject || !Object.keys(rooms).includes(subject)) return res.status(400).end()
+
+	res.status(200).json(getSubjectDatas(subject))
+})
+
+app.get("/subjects", (req, res) => {
+	res.status(200).json(getSubjectsDatas())
+})
+
 app.post("/name", (req, res) => {
 	let token = req.headers.token
 	let verified = token ? jwt.verify(token, secretKey) : false
@@ -46,6 +57,7 @@ app.post("/name", (req, res) => {
 	}
 
 	let name = req.body
+	name.trim()
 	if (typeof name != "string") {
 		res.status(400).json({ error: "Name type not string" })
 		return
@@ -64,13 +76,20 @@ app.post("/createRoom", (req, res) => {
 
 	if (!verified) return res.status(400).send("Wrong token")
 
+	user = users.find((user) => user.name == verified)
+
+	if (!user) return res.status(400).send("User not found")
+
 	let { roomTheme, roomName } = req.body
 
 	if (!roomTheme || !roomName) return res.status(400).send("Wrong content")
 
-	rooms[roomTheme].push(new Room(host, roomName))
-
-	res.status(201).end()
+	if (isRoomNameTaken(roomTheme, roomName)) {
+		res.status(400).send("Room name taken")
+	} else {
+		rooms[roomTheme].push(new Room(host, roomName))
+		res.status(201).end()
+	}
 })
 
 io.on("connection", (socket) => {
@@ -118,4 +137,22 @@ server.listen(PORT, IP, () => {
 
 function findRoom(roomTheme, roomName) {
 	return rooms[roomTheme].find((el, i) => el.name == roomName)
+}
+
+function isRoomNameTaken(roomTheme, roomName) {
+	return rooms[roomTheme].some((el) => el.name == roomName)
+}
+
+function getSubjectDatas(subject) {
+	return rooms[subject].map((el) => ({
+		roomName: el.name,
+		userCount: el.users.length
+	}))
+}
+
+function getSubjectsDatas() {
+	return Object.keys(rooms).map((el) => ({
+		subject: el,
+		userCount: rooms[el].reduce((acc, el) => acc + el.users.length, 0)
+	}))
 }
