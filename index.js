@@ -67,7 +67,7 @@ app.post("/name", (req, res) => {
 	}
 	users.push(new User(name))
 	token = jwt.sign(name, secretKey)
-	res.status(200).send(token)
+	res.status(200).contentType("text/plain").send(token)
 })
 
 app.post("/createRoom", (req, res) => {
