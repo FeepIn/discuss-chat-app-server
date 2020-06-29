@@ -49,7 +49,7 @@ app.get("/subjects", (req, res) => {
 
 app.post("/name", (req, res) => {
 	let token = req.headers.token
-	let verified = token ? jwt.verify(token, secretKey) : false
+	let verified = auth(token, secretKey)
 
 	if (verified) {
 		res.status(300).json({ error: "Already connected" })
@@ -87,7 +87,9 @@ app.post("/createRoom", (req, res) => {
 	if (isRoomNameTaken(roomTheme, roomName)) {
 		res.status(400).send("Room name taken")
 	} else {
-		rooms[roomTheme].push(new Room(host, roomName))
+		var newRoom = new Room(user, roomName)
+		user.room = newRoom
+		rooms[roomTheme].push(newRoom)
 		res.status(201).end()
 	}
 })
@@ -122,6 +124,7 @@ io.on("connection", (socket) => {
 
 		user.socket = socket
 		user.configureListeners()
+		user.room = room
 		room.addUser(user)
 		io.in(room.name).emit("newUser", { userName: user.name, color: user.color })
 	})
