@@ -52,19 +52,21 @@ app.post("/name", (req, res) => {
 	let verified = auth(token, secretKey)
 
 	if (verified) {
-		res.status(300).json({ error: "Already connected" })
+		res.status(300).send("Already connected")
 		return
 	}
 
 	let name = req.body
 	name.trim()
 	if (typeof name != "string") {
-		res.status(400).json({ error: "Name type not string" })
+		res.status(400).send("Name type not string")
 		return
 	} else if (namesTaken.includes(name)) {
-		res.status(400).json({ error: "Name taken" })
+		res.status(400).send("Name taken")
 		return
 	}
+
+	if (name != "Anonymous") namesTaken.push(name)
 	users.push(new User(name))
 	token = jwt.sign(name, secretKey)
 	res.status(200).contentType("text/plain").send(token)
