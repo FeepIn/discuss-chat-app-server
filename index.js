@@ -69,9 +69,11 @@ app.post("/name", (req, res) => {
 	if (name.length == 0) name = "Anonymous"
 
 	if (name != "Anonymous") namesTaken.push(name)
+
 	users.push(new User(name))
 	token = jwt.sign(name, secretKey)
 	res.status(200).contentType("text/plain").send(token)
+	console.log(namesTaken.toString())
 })
 
 app.post("/createRoom", (req, res) => {
