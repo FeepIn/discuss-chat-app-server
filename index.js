@@ -66,6 +66,8 @@ app.post("/name", (req, res) => {
 		return
 	}
 
+	if (name.length == 0) name = "Anonymous"
+
 	if (name != "Anonymous") namesTaken.push(name)
 	users.push(new User(name))
 	token = jwt.sign(name, secretKey)
