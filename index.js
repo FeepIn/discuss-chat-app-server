@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
+const jwt = require("jsonwebtoken")
 
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || "localhost";
@@ -33,7 +34,7 @@ function Room(host, roomName, roomTheme) {
 	this.userCount = 0;
 	this.unactivityTimeSeconds = 0;
 	theme[roomTheme].push(this);
-	addUser(host);
+	//addUser(host);
 	console.log(`Room "${roomName}" has been created by "${host.name}"`);
 
 	function addUser(user) {
@@ -212,9 +213,21 @@ server.listen(PORT, HOST, () => {
 app.use(express.static("./public"));
 
 //Routes
-app.get("/rooms", (req, res) => {
-	res.json(getCounts());
+app.get("/subjects", (req, res) => {
+	res.json(getSubjectsInfo());
 });
+
+app.get("/subject/:subjectName", (req, res) => {
+	if (!hasSubject(req.params.subjectName)) {
+		res.status(400).json({
+			error: "Unknown subject"
+		})
+	} else {
+		res.status(200).json(getRoomsInfo(req.params.subjectName))
+	}
+}) 
+
+app.get
 
 //Socket event
 io.on("connection", (socket) => {
@@ -237,21 +250,43 @@ io.on("connection", (socket) => {
 	});
 });
 
-function getCounts() {
-	var datas = {};
+
+function getSubjectsInfo() {
+	var datas = [];
 	var themes = Object.keys(theme);
 
 	for (var i = 0; i < themes.length; i++) {
-		datas[themes[i]] = {};
-		datas[themes[i]].userCount = theme[themes[i]].reduce((acc, cur) => {
-			return acc + cur.users.length;
-		}, 0);
-		datas[themes[i]].rooms = theme[themes[i]].map((val) => {
-			return { roomName: val.roomName, userCount: val.users.length };
+		datas.push({
+			"subjectName": themes[i],
+			"userCount": theme[themes[i]].reduce((acc, cur) => {
+				return acc + cur.users.length;
+			}, 0)
 		});
 	}
-
 	return datas;
+}
+
+function getRoomsInfo(subject) {
+
+	const datas = []
+
+	for (var i = 0; i < theme[subject].length; i++) {
+		const room = theme[subject][i]
+
+		datas.push({
+			"roomName": room.roomName,
+			"userCount": room.users.length
+		})
+	}
+	
+	return datas
+}
+
+
+const keys = Object.keys(theme)
+
+function hasSubject(subject) {
+	return keys.includes(subject)
 }
 
 function countDownRoomLifeTime() {
